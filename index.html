@@ -249,7 +249,19 @@ h1{
     font-weight:300;
 }
 
-.actions{text-align:center;}
+.actions{
+    text-align:center;
+    position:relative;
+    min-height:120px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+#noBtn{
+    position:relative;
+    transition:transform 0.25s ease;
+}
 
 button{
     padding:13px 28px;
@@ -361,11 +373,11 @@ input[type="date"]{
     <div class="reveal-sequence" id="revealSeq">
         <div class="card">
             <h2>Happy Birthday</h2>
-            <p>Here's to a year that's as bug-free as your test cases, as sharp as your eye for the smallest detail, and full of the same warmth you bring to every standup ✨</p>
+            <p>Today isn't just another day on the calendar, it's the day someone truly special was born ❤️ I hope this year brings you as much happiness as you bring into the room the moment you walk in.</p>
         </div>
 
         <div class="card">
-            <p>Between the test cycles, the tricky edge cases, and the daily standups, you've quietly become the brightest part of the workday 💖</p>
+            <p>Out of everyone I've come to know, you've become the person I look forward to seeing the most. Some people just make ordinary days feel a little brighter, and you're one of them 💖</p>
         </div>
 
         <div class="card">
@@ -396,7 +408,7 @@ input[type="date"]{
 
 <script>
 // ===== CONFIGURATION =====
-const BIRTHDAY_DATE = new Date("2026-07-21T00:00:00");
+const BIRTHDAY_DATE = new Date("2020-01-01T00:00:00"); // PREVIEW ONLY: past date so gift unlocks instantly
 
 // Google Apps Script URL
 const SHEET_WEB_APP = "https://script.google.com/macros/s/AKfycbyO6Sf2vsiLY1JsMozYDcy22m0fsNJU8_vcOfi4MdBW9KYPHByKyjwjSDlYPe_1VSA9/exec";
@@ -520,10 +532,48 @@ document.getElementById("yesBtn").onclick = ()=>{
     document.getElementById("dateSection").classList.remove("hidden");
 };
 
-document.getElementById("noBtn").onclick = ()=>{
-    const msgBox = document.getElementById("success");
-    msgBox.textContent = "No worries — the offer stands whenever you're ready 💖";
-};
+const noBtn = document.getElementById("noBtn");
+const actionsArea = document.querySelector(".actions");
+let dodgeCount = 0;
+
+function dodgeNoButton(){
+    dodgeCount++;
+    const areaRect = actionsArea.getBoundingClientRect();
+    const btnRect = noBtn.getBoundingClientRect();
+
+    const maxX = Math.max(0, areaRect.width - btnRect.width);
+    const maxY = Math.max(0, areaRect.height - btnRect.height);
+
+    const newX = Math.random()*maxX - (btnRect.left - areaRect.left);
+    const newY = Math.random()*maxY - (btnRect.top - areaRect.top);
+
+    noBtn.style.transform = `translate(${newX}px, ${newY}px)`;
+
+    const teases = [
+        "Not so fast 😄",
+        "You'll have to catch me first 🙈",
+        "This button doesn't work today 💖",
+        "Nice try 😘",
+        "Only one real answer here 💕"
+    ];
+    document.getElementById("success").textContent = teases[Math.min(dodgeCount-1, teases.length-1)];
+}
+
+let lastDodgeTime = 0;
+function handleDodgeAttempt(e){
+    e.preventDefault();
+    const now = Date.now();
+    if(now - lastDodgeTime < 500) return; // ignore synthetic click that follows touchstart
+    lastDodgeTime = now;
+    dodgeNoButton();
+}
+
+noBtn.addEventListener("mouseenter", ()=>{
+    if(Date.now() - lastDodgeTime < 500) return;
+    dodgeNoButton();
+});
+noBtn.addEventListener("click", handleDodgeAttempt);
+noBtn.addEventListener("touchstart", handleDodgeAttempt, {passive:false});
 
 // ===== DATE RANGE =====
 const lunchDate = document.getElementById("lunchDate");
